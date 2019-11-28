@@ -4,6 +4,7 @@
 #include <Ws2tcpip.h>
 #include <iostream>
 #include "MyThread.h"
+#include <vector>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -50,6 +51,7 @@ void main() {
 	}
 
 	SOCKET AcceptSocket;
+	std::vector<SOCKET>* clients = new std::vector<SOCKET>();
 	printf("Waiting for clients to connect...\n");
 
 	while(1) {
@@ -64,7 +66,8 @@ void main() {
 			std::cout << "Client " << AcceptSocket << " is connected" << std::endl;
 		}
 
-		MyThread* myThread = new MyThread(AcceptSocket);
+		clients->push_back(AcceptSocket);
+		MyThread* myThread = new MyThread(AcceptSocket, clients);
 		myThread->start();
 	}
 

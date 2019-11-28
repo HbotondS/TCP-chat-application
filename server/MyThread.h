@@ -1,10 +1,11 @@
 #pragma once
 #include <Ws2tcpip.h>
 #include <iostream>
+#include <vector>
 
 class MyThread {
 public:
-	MyThread(SOCKET);
+	MyThread(SOCKET, std::vector<SOCKET>*);
 	virtual ~MyThread();
 	virtual bool start(void);
 	virtual bool stop(unsigned int timeout = 0);
@@ -24,6 +25,7 @@ private:
 	volatile bool m_bRunning;
 	volatile bool m_bExited;
 	HANDLE m_thread;
-	SOCKET AcceptSocket;
+	SOCKET ClientSocket;
+	std::vector<SOCKET>* clients;
 };
 

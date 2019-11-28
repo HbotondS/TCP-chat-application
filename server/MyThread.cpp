@@ -16,7 +16,7 @@ DWORD WINAPI runStub(LPVOID mthread) {
 	return 0;
 }
 
-MyThread::MyThread(SOCKET AcceptSocket): AcceptSocket(AcceptSocket) {
+MyThread::MyThread(SOCKET ClientSocket, std::vector<SOCKET>* clients): ClientSocket(ClientSocket), clients(clients) {
 	m_bRunning = false;
 	m_bExited = true;
 	m_thread = INVALID_HANDLE_VALUE;
@@ -63,19 +63,21 @@ void MyThread::run(void) {
 	int iResult;
 	while(1) {
 		std::cout << "Receiving datagrams...\n";
-		iResult = recv(AcceptSocket, RecvBuf, BufLen - 1, 0);
+		iResult = recv(ClientSocket, RecvBuf, BufLen - 1, 0);
 		if(iResult == SOCKET_ERROR) {
 			int errorCode = WSAGetLastError();
 			if(errorCode == 10054) {
-				printf("Client %d is disconnected\n", AcceptSocket);
+				printf("Client %d is disconnected\n", ClientSocket);
 			} else {
 				printf("recv() failed with the following code: %d\n", errorCode);
 			}
 			return;
 		}
 
-		std::cout << "Sending a datagram...\n";
 		// the server send the message back to the client
-		send(AcceptSocket, RecvBuf, strlen(RecvBuf), 0);
+		for(int i = 0; i < clients->size(); ++i) {
+			std::cout << "Sending a datagram to " << clients->at(i) << std::endl;
+			send(clients->at(i), RecvBuf, strlen(RecvBuf), 0);
+		}
 	}
 }
