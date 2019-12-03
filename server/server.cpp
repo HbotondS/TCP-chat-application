@@ -26,7 +26,7 @@ void main() {
 	}
 
 	// declare the IP & port where we want to connect
-	int Port = 13;
+	int Port = 3000;
 	char IP[10] = "127.0.0.1";
 	sockaddr_in service;
 	int AddrLen = sizeof(service);

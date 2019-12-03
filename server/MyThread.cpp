@@ -58,7 +58,7 @@ bool MyThread::stop(unsigned int timeout) {
 }
 void MyThread::run(void) {
 	char SendBuf[1024];
-	char RecvBuf[1024];
+	char RecvBuf[1024] = "";
 	int BufLen = 1024;
 	int iResult;
 	while(1) {
