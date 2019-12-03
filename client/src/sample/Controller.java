@@ -1,7 +1,5 @@
 package sample;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventType;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -9,7 +7,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URL;
@@ -29,6 +29,9 @@ public class Controller implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        Thread thread = new Thread(new MyRunnable());
+        thread.start();
     }
 
     public void sendMsg() {
@@ -49,6 +52,23 @@ public class Controller implements Initializable {
     public void sendOnEnter(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER) {
             sendMsg();
+        }
+    }
+
+    private class MyRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    String msg = bufferedReader.readLine();
+                    textArea.appendText(msg + "\n");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

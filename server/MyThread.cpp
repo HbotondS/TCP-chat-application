@@ -1,6 +1,7 @@
 #include "MyThread.h"
 #include <limits.h>
 #include <windows.h>
+#include <string>
 
 #define INVALID_HANDLE_VALUE 0
 
@@ -77,6 +78,13 @@ void MyThread::run(void) {
 		// the server send the message back to the client
 		for(int i = 0; i < clients->size(); ++i) {
 			std::cout << "Sending a datagram to " << clients->at(i) << std::endl;
+			std::string buf = RecvBuf, result;
+			if(ClientSocket == clients->at(i)) {
+				result = "Me: " + buf;
+			} else {
+				result = std::to_string(ClientSocket) + ": " + buf;
+			}
+			strcpy_s(RecvBuf, result.c_str());
 			send(clients->at(i), RecvBuf, strlen(RecvBuf), 0);
 		}
 	}

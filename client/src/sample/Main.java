@@ -15,8 +15,10 @@ public class Main extends Application {
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
 
+        primaryStage.setOnHiding(event -> {
+            System.exit(0);
+        });
     }
-
 
     public static void main(String[] args) {
         launch(args);
