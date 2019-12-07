@@ -2,6 +2,7 @@
 #include <limits.h>
 #include <windows.h>
 #include <string>
+#include <algorithm>
 
 #define INVALID_HANDLE_VALUE 0
 
@@ -68,6 +69,7 @@ void MyThread::run(void) {
 		if(iResult == SOCKET_ERROR) {
 			int errorCode = WSAGetLastError();
 			if(errorCode == 10054) {
+				clients->erase(std::remove(clients->begin(), clients->end(), ClientSocket), clients->end());
 				printf("Client %d is disconnected\n", ClientSocket);
 			} else {
 				printf("recv() failed with the following code: %d\n", errorCode);
