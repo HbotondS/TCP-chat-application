@@ -71,6 +71,14 @@ void MyThread::run(void) {
 			if(errorCode == 10054) {
 				clients->erase(std::remove(clients->begin(), clients->end(), ClientSocket), clients->end());
 				printf("Client %d is disconnected\n", ClientSocket);
+				// send message to the gourp that a new client is disconnected
+				for(int i = 0; i < clients->size(); ++i) {
+					std::string result;
+					char RecvBuf[1024] = "";
+					result = std::to_string(ClientSocket) + " left the chat.\n";
+					strcpy_s(RecvBuf, result.c_str());
+					send(clients->at(i), RecvBuf, strlen(RecvBuf), 0);
+				}
 			} else {
 				printf("recv() failed with the following code: %d\n", errorCode);
 			}
@@ -80,14 +88,16 @@ void MyThread::run(void) {
 		// the server send the message back to the client
 		for(int i = 0; i < clients->size(); ++i) {
 			std::cout << "Sending a datagram to " << clients->at(i) << std::endl;
-			std::string buf = RecvBuf, result;
+			char tempBuf[1024];
+			strcpy_s(tempBuf, RecvBuf);
+			std::string buf = tempBuf, result;
 			if(ClientSocket == clients->at(i)) {
 				result = "Me: " + buf;
 			} else {
 				result = std::to_string(ClientSocket) + ": " + buf;
 			}
-			strcpy_s(RecvBuf, result.c_str());
-			send(clients->at(i), RecvBuf, strlen(RecvBuf), 0);
+			strcpy_s(tempBuf, result.c_str());
+			send(clients->at(i), tempBuf, strlen(tempBuf), 0);
 		}
 	}
 }
