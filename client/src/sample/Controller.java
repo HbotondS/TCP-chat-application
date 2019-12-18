@@ -5,6 +5,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,17 +22,31 @@ public class Controller implements Initializable {
     public Button sendBtn;
     public Label error;
 
-    Socket socket = null;
+    private Socket socket = null;
 
     private boolean isConnected  = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        Thread thread1 = new Thread(new ConnectThread());
-        thread1.start();
+        try {
+            socket = new Socket("127.0.0.1", 3000);
+        } catch (IOException e) {
+            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.setHeaderText(null);
+            errorAlert.setContentText("The server is not running");
+            errorAlert.showAndWait();
+
+            System.exit(0);
+        }
 
         Thread thread = new Thread(new RecvThread());
         thread.start();
+    }
+
+    public void setStageAndSetupListeners(Stage window) {
+        window.setOnCloseRequest(e -> {
+            System.exit(0);
+        });
     }
 
     public void sendMsg() {
@@ -73,34 +89,7 @@ public class Controller implements Initializable {
                 } catch (IOException e) {
                     isServerOnline = false;
                     isConnected = false;
-                    System.out.println("connected: " + isConnected);
                     Platform.runLater(() -> error.setText("Server is offline"));
-                }
-            }
-        }
-    }
-
-    private class ConnectThread implements Runnable {
-
-        @Override
-        public void run() {
-            while (true) {
-                try {
-                    if (!isConnected) {
-                        socket = new Socket("127.0.0.1", 3000);
-                        isConnected = true;
-
-                        System.out.println("connected: " + isConnected);
-                    }
-                } catch (IOException e) {
-//                    Platform.runLater(() -> {
-//                        Alert errorAlert = new Alert(Alert.AlertType.ERROR);
-//                        errorAlert.setHeaderText(null);
-//                        errorAlert.setContentText("The server is not running");
-//                        errorAlert.showAndWait();
-//
-//                        System.exit(0);
-//                    });
                 }
             }
         }

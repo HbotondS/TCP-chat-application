@@ -9,15 +9,15 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-        primaryStage.setTitle("Hello World");
-        primaryStage.setScene(new Scene(root));
-        primaryStage.show();
+    public void start(Stage window) throws Exception{
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("sample.fxml"));
+        Parent root = loader.load();
+        Controller controller = loader.getController();
+        controller.setStageAndSetupListeners(window);
 
-        primaryStage.setOnHiding(event -> {
-            System.exit(0);
-        });
+        window.setTitle("Hello World");
+        window.setScene(new Scene(root));
+        window.show();
     }
 
     public static void main(String[] args) {
