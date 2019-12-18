@@ -66,12 +66,12 @@ void main() {
 		} else {
 			std::cout << "Client " << AcceptSocket << " is connected" << std::endl;
 			// send message to the gourp that a new client is connected
-			for(int i = 0; i < clients->size(); ++i) {
-				std::string result;
-				char RecvBuf[1024] = "";
-				result = std::to_string(AcceptSocket) + " is joind the chat.\n";
-				strcpy_s(RecvBuf, result.c_str());
-				send(clients->at(i), RecvBuf, strlen(RecvBuf), 0);
+			std::string result;
+			char RecvBuf[1024] = "";
+			result = std::to_string(AcceptSocket) + " is joind the chat.\n";
+			strcpy_s(RecvBuf, result.c_str());
+			for(auto client = clients->begin(); client != clients->end(); ++client) {
+				send(*client, RecvBuf, strlen(RecvBuf), 0);
 			}
 		}
 

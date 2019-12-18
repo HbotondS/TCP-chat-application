@@ -70,6 +70,10 @@ public class Controller implements Initializable {
         }
     }
 
+    private void processMsg(String msg) {
+        textArea.appendText(msg + "\n");
+    }
+
     private class RecvThread implements Runnable {
 
         private boolean isServerOnline = true;
@@ -84,8 +88,7 @@ public class Controller implements Initializable {
                     isServerOnline = true;
                     InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                    String msg = bufferedReader.readLine();
-                    textArea.appendText(msg + "\n");
+                    processMsg(bufferedReader.readLine());
                 } catch (IOException e) {
                     isServerOnline = false;
                     isConnected = false;
