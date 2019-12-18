@@ -18,7 +18,7 @@ DWORD WINAPI runStub(LPVOID mthread) {
 	return 0;
 }
 
-MyThread::MyThread(SOCKET ClientSocket, std::vector<SOCKET>* clients): ClientSocket(ClientSocket), clients(clients) {
+MyThread::MyThread(SOCKET ClientSocket, std::vector<Client>* clients): ClientSocket(ClientSocket), clients(clients) {
 	m_bRunning = false;
 	m_bExited = true;
 	m_thread = INVALID_HANDLE_VALUE;
@@ -69,15 +69,21 @@ void MyThread::run(void) {
 		if(iResult == SOCKET_ERROR) {
 			int errorCode = WSAGetLastError();
 			if(errorCode == 10054) {
-				clients->erase(std::remove(clients->begin(), clients->end(), ClientSocket), clients->end());
+				std::string result;
+				// remove the user from client list who left the chat
+				for(auto client = clients->begin(); client != clients->end(); ++client) {
+					if(client->socket == ClientSocket) {
+						result = client->nickname + " left the chat.\n";
+						clients->erase(client);
+						break;
+					}
+				}
 				printf("Client %d is disconnected\n", ClientSocket);
 				// send message to the gourp that a new client is disconnected
-				std::string result;
 				char RecvBuf[1024] = "";
-				result = std::to_string(ClientSocket) + " left the chat.\n";
 				strcpy_s(RecvBuf, result.c_str());
 				for(auto client = clients->begin(); client != clients->end(); ++client) {
-					send(*client, RecvBuf, strlen(RecvBuf), 0);
+					send(client->socket, RecvBuf, strlen(RecvBuf), 0);
 				}
 			} else {
 				printf("recv() failed with the following code: %d\n", errorCode);
@@ -90,14 +96,14 @@ void MyThread::run(void) {
 		strcpy_s(tempBuf, RecvBuf);
 		std::string buf = tempBuf, result;
 		for(auto client = clients->begin(); client != clients->end(); ++client) {
-			std::cout << "Sending a datagram to " << *client << std::endl;
-			if(ClientSocket == *client) {
+			std::cout << "Sending a datagram to " << client->socket << std::endl;
+			if(ClientSocket == client->socket) {
 				result = "Me: " + buf;
 			} else {
-				result = std::to_string(ClientSocket) + ": " + buf;
+				result = client->nickname + ": " + buf;
 			}
 			strcpy_s(tempBuf, result.c_str());
-			send(*client, tempBuf, strlen(tempBuf), 0);
+			send(client->socket, tempBuf, strlen(tempBuf), 0);
 		}
 	}
 }

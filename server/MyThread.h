@@ -2,10 +2,11 @@
 #include <Ws2tcpip.h>
 #include <iostream>
 #include <vector>
+#include "Client.h"
 
 class MyThread {
 public:
-	MyThread(SOCKET, std::vector<SOCKET>*);
+	MyThread(SOCKET, std::vector<Client>*);
 	virtual ~MyThread();
 	virtual bool start(void);
 	virtual bool stop(unsigned int timeout = 0);
@@ -26,6 +27,6 @@ private:
 	volatile bool m_bExited;
 	HANDLE m_thread;
 	SOCKET ClientSocket;
-	std::vector<SOCKET>* clients;
+	std::vector<Client>* clients;
 };
 

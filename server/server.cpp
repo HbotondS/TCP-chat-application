@@ -1,13 +1,28 @@
 #include <stdio.h>
-#include <string.h>
 #include "winsock2.h"
 #include <Ws2tcpip.h>
 #include <iostream>
-#include "MyThread.h"
 #include <vector>
 #include <string>
+#include "MyThread.h"
+#include "Client.h"
 
 #pragma comment(lib, "ws2_32.lib")
+
+std::vector<std::string> split(const char* str, char c = ' ') {
+	std::vector<std::string> result;
+
+	do {
+		const char* begin = str;
+
+		while(*str != c && *str)
+			str++;
+
+		result.push_back(std::string(begin, str));
+	} while(0 != *str++);
+
+	return result;
+}
 
 void main() {
 	// initialize thw Winsock library
@@ -52,30 +67,38 @@ void main() {
 	}
 
 	SOCKET AcceptSocket;
-	std::vector<SOCKET>* clients = new std::vector<SOCKET>();
+	std::vector<Client>* clients = new std::vector<Client>();
 	printf("Waiting for clients to connect...\n");
 
 	while(1) {
 		// Accept the connection.
 		AcceptSocket = accept(ListenSocket, NULL, NULL);
+		std::string clientName;
 		if(AcceptSocket == INVALID_SOCKET) {
 			printf("accept failed: %d\n", WSAGetLastError());
 			closesocket(ListenSocket);
 			WSACleanup();
 			return;
 		} else {
-			std::cout << "Client " << AcceptSocket << " is connected" << std::endl;
-			// send message to the gourp that a new client is connected
-			std::string result;
 			char RecvBuf[1024] = "";
-			result = std::to_string(AcceptSocket) + " is joind the chat.\n";
-			strcpy_s(RecvBuf, result.c_str());
-			for(auto client = clients->begin(); client != clients->end(); ++client) {
-				send(*client, RecvBuf, strlen(RecvBuf), 0);
+			int BufLen = 1024;
+			iResult = recv(AcceptSocket, RecvBuf, BufLen - 1, 0);
+			std::cout << RecvBuf << std::endl;
+			std::vector<std::string> splittedMsg = split(RecvBuf, '|');
+			clientName = splittedMsg.at(1);
+			if(splittedMsg.at(0) == "join") {
+				std::cout << "Client " << clientName << " is connected" << std::endl;
+				// send message to the gourp that a new client is connected
+				std::string result;
+				result = clientName + " is joind the chat.\n";
+				strcpy_s(RecvBuf, result.c_str());
+				for(auto client = clients->begin(); client != clients->end(); ++client) {
+					send(client->socket, RecvBuf, strlen(RecvBuf), 0);
+				}
 			}
 		}
 
-		clients->push_back(AcceptSocket);
+		clients->push_back(Client(AcceptSocket, clientName));
 		MyThread* myThread = new MyThread(AcceptSocket, clients);
 		myThread->start();
 	}

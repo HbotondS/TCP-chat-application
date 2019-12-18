@@ -1,11 +1,9 @@
-package sample;
+package sample.chat;
 
 import javafx.application.Platform;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
@@ -13,10 +11,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.URL;
-import java.util.ResourceBundle;
 
-public class Controller implements Initializable {
+public class ChatController {
     public TextArea textArea;
     public TextField msg;
     public Button sendBtn;
@@ -24,12 +20,14 @@ public class Controller implements Initializable {
 
     private Socket socket = null;
 
-    private boolean isConnected  = false;
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
+    public void joinChat(String nickname) {
         try {
             socket = new Socket("127.0.0.1", 3000);
+
+            // send join message to server
+            PrintWriter pr = new PrintWriter(socket.getOutputStream());
+            pr.print("join|" + nickname);
+            pr.flush();
         } catch (IOException e) {
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
             errorAlert.setHeaderText(null);
@@ -91,7 +89,6 @@ public class Controller implements Initializable {
                     processMsg(bufferedReader.readLine());
                 } catch (IOException e) {
                     isServerOnline = false;
-                    isConnected = false;
                     Platform.runLater(() -> error.setText("Server is offline"));
                 }
             }
