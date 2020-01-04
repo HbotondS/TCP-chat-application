@@ -4,6 +4,9 @@ import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
 import java.io.BufferedReader;
@@ -13,7 +16,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 
 public class ChatController {
-    public TextArea textArea;
+    public TextFlow textArea;
     public TextField msg;
     public Button sendBtn;
     public Label error;
@@ -69,7 +72,30 @@ public class ChatController {
     }
 
     private void processMsg(String msg) {
-        textArea.appendText(msg + "\n");
+        String[] splittedMsg = msg.split("\\|");
+        switch (splittedMsg[0]) {
+            case "join": {
+                Text text = new Text(splittedMsg[1] + " joined the chat.\n");
+                text.setStyle("-fx-font-weight: bold");
+                Platform.runLater(() -> textArea.getChildren().add(text));
+                break;
+            }
+            case "leave": {
+                Text text = new Text(splittedMsg[1] + " left the chat.\n");
+                text.setStyle("-fx-font-weight: bold");
+                text.setFill(Color.RED);
+                Platform.runLater(() -> textArea.getChildren().add(text));
+                break;
+            }
+            case "public": {
+                Text text = new Text(splittedMsg[1] + ": " + splittedMsg[2] + "\n");
+                Platform.runLater(() -> textArea.getChildren().add(text));
+                break;
+            }
+            default: {
+                Platform.runLater(() -> textArea.getChildren().add(new Text(msg + "\n")));
+            }
+        }
     }
 
     private class RecvThread implements Runnable {

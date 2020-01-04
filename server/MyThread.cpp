@@ -73,13 +73,13 @@ void MyThread::run(void) {
 				// remove the user from client list who left the chat
 				for(auto client = clients->begin(); client != clients->end(); ++client) {
 					if(client->socket == currentClient.socket) {
-						result = client->nickname + " left the chat.\n";
+						result = "leave|" + client->nickname + "\n";
 						clients->erase(client);
 						break;
 					}
 				}
 				printf("Client %d is disconnected\n", currentClient.socket);
-				// send message to the gourp that a new client is disconnected
+				// send message to the gourp that a client is disconnected
 				char RecvBuf[1024] = "";
 				strcpy_s(RecvBuf, result.c_str());
 				for(auto client = clients->begin(); client != clients->end(); ++client) {
@@ -100,7 +100,7 @@ void MyThread::run(void) {
 			if(currentClient.socket == client->socket) {
 				result = "Me: " + buf;
 			} else {
-				result = currentClient.nickname + ": " + buf;
+				result = "public|" + currentClient.nickname + "|" + buf;
 			}
 			strcpy_s(tempBuf, result.c_str());
 			send(client->socket, tempBuf, strlen(tempBuf), 0);

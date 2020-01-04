@@ -90,7 +90,7 @@ void main() {
 				std::cout << "Client " << clientName << " is connected" << std::endl;
 				// send message to the gourp that a new client is connected
 				std::string result;
-				result = clientName + " is joind the chat.\n";
+				result = "join|" + clientName + "\n";
 				strcpy_s(RecvBuf, result.c_str());
 				for(auto client = clients->begin(); client != clients->end(); ++client) {
 					send(client->socket, RecvBuf, strlen(RecvBuf), 0);

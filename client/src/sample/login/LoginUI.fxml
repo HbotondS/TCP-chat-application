@@ -8,7 +8,8 @@
 <AnchorPane fx:id="ap" prefHeight="160.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/10.0.1"
             xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.login.LoginController">
     <Label layoutX="42.0" layoutY="48.0" text="Nickname:" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="50.0"/>
-    <TextField fx:id="nickname" layoutX="118.0" layoutY="46.0" prefHeight="25.0" prefWidth="137.0"
+    <TextField fx:id="nickname" onKeyPressed="#sendOnEnter" layoutX="118.0" layoutY="46.0" prefHeight="25.0"
+               prefWidth="137.0"
                AnchorPane.rightAnchor="50.0" AnchorPane.topAnchor="46.0"/>
     <Button layoutX="163.0" layoutY="91.0" mnemonicParsing="false" onMouseClicked="#join" text="Join"
             AnchorPane.topAnchor="91.0"/>
