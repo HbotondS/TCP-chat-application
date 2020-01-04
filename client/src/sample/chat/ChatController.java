@@ -1,7 +1,11 @@
 package sample.chat;
 
 import javafx.application.Platform;
-import javafx.scene.control.*;
+import javafx.event.ActionEvent;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
@@ -14,23 +18,27 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ChatController {
     public TextFlow textArea;
     public TextField msg;
     public Button sendBtn;
     public Label error;
+    public Button refreshBtn;
 
     private Socket socket = null;
+    private Timer timer = new Timer();
+
+    private boolean isServerOnline = true;
+
+    private String nickname;
 
     public void joinChat(String nickname) {
+        this.nickname = nickname;
         try {
-            socket = new Socket("127.0.0.1", 3000);
-
-            // send join message to server
-            PrintWriter pr = new PrintWriter(socket.getOutputStream());
-            pr.print("join|" + nickname);
-            pr.flush();
+            connect(nickname);
         } catch (IOException e) {
             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
             errorAlert.setHeaderText(null);
@@ -40,14 +48,42 @@ public class ChatController {
             System.exit(0);
         }
 
-        Thread thread = new Thread(new RecvThread());
-        thread.start();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    if (isServerOnline) {
+                        Platform.runLater(() -> {
+                            error.setVisible(false);
+                            refreshBtn.setVisible(false);
+                        });
+                    }
+                    isServerOnline = true;
+                    InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
+                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                    processMsg(bufferedReader.readLine());
+                } catch (IOException e) {
+                    isServerOnline = false;
+                    Platform.runLater(() -> {
+                        error.setVisible(true);
+                        refreshBtn.setVisible(true);
+                    });
+                }
+            }
+        }, 0, 1);
+    }
+
+    private void connect(String nickname) throws IOException {
+        socket = new Socket("127.0.0.1", 3000);
+
+        // send join message to server
+        PrintWriter pr = new PrintWriter(socket.getOutputStream());
+        pr.print("join|" + nickname);
+        pr.flush();
     }
 
     public void setStageAndSetupListeners(Stage window) {
-        window.setOnCloseRequest(e -> {
-            System.exit(0);
-        });
+        window.setOnCloseRequest(e -> System.exit(0));
     }
 
     public void sendMsg() {
@@ -98,26 +134,13 @@ public class ChatController {
         }
     }
 
-    private class RecvThread implements Runnable {
+    public void reconnect(ActionEvent actionEvent) {
+        System.out.println("refreshed");
+        try {
+            connect(this.nickname);
+            isServerOnline = true;
+        } catch (IOException e) {
 
-        private boolean isServerOnline = true;
-
-        @Override
-        public void run() {
-            while (true) {
-                try {
-                    if (isServerOnline) {
-                        Platform.runLater(() -> error.setText(""));
-                    }
-                    isServerOnline = true;
-                    InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
-                    BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                    processMsg(bufferedReader.readLine());
-                } catch (IOException e) {
-                    isServerOnline = false;
-                    Platform.runLater(() -> error.setText("Server is offline"));
-                }
-            }
         }
     }
 }

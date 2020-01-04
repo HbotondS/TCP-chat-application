@@ -28,7 +28,9 @@
             <Insets right="5.0"/>
         </GridPane.margin>
     </Button>
-    <Label fx:id="error" alignment="CENTER" textFill="RED" GridPane.halignment="CENTER" GridPane.rowIndex="1"/>
+    <Label fx:id="error" text="Server is offline" alignment="CENTER" textFill="RED" GridPane.halignment="CENTER"
+           GridPane.rowIndex="1"/>
+    <Button fx:id="refreshBtn" visible="false" text="Reconnect" onAction="#reconnect" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
     <padding>
         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
     </padding>
