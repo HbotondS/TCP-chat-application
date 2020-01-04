@@ -97,9 +97,9 @@ void main() {
 				}
 			}
 		}
-
-		clients->push_back(Client(AcceptSocket, clientName));
-		MyThread* myThread = new MyThread(AcceptSocket, clients);
+		Client newClient(AcceptSocket, clientName);
+		clients->push_back(newClient);
+		MyThread* myThread = new MyThread(newClient, clients);
 		myThread->start();
 	}
 

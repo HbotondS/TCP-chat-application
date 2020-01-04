@@ -6,7 +6,7 @@
 
 class MyThread {
 public:
-	MyThread(SOCKET, std::vector<Client>*);
+	MyThread(Client, std::vector<Client>*);
 	virtual ~MyThread();
 	virtual bool start(void);
 	virtual bool stop(unsigned int timeout = 0);
@@ -26,7 +26,7 @@ private:
 	volatile bool m_bRunning;
 	volatile bool m_bExited;
 	HANDLE m_thread;
-	SOCKET ClientSocket;
+	Client currentClient;
 	std::vector<Client>* clients;
 };
 

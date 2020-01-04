@@ -18,7 +18,7 @@ DWORD WINAPI runStub(LPVOID mthread) {
 	return 0;
 }
 
-MyThread::MyThread(SOCKET ClientSocket, std::vector<Client>* clients): ClientSocket(ClientSocket), clients(clients) {
+MyThread::MyThread(Client currentClient, std::vector<Client>* clients): currentClient(currentClient), clients(clients) {
 	m_bRunning = false;
 	m_bExited = true;
 	m_thread = INVALID_HANDLE_VALUE;
@@ -65,20 +65,20 @@ void MyThread::run(void) {
 	int iResult;
 	while(1) {
 		std::cout << "Receiving datagrams...\n";
-		iResult = recv(ClientSocket, RecvBuf, BufLen - 1, 0);
+		iResult = recv(currentClient.socket, RecvBuf, BufLen - 1, 0);
 		if(iResult == SOCKET_ERROR) {
 			int errorCode = WSAGetLastError();
 			if(errorCode == 10054) {
 				std::string result;
 				// remove the user from client list who left the chat
 				for(auto client = clients->begin(); client != clients->end(); ++client) {
-					if(client->socket == ClientSocket) {
+					if(client->socket == currentClient.socket) {
 						result = client->nickname + " left the chat.\n";
 						clients->erase(client);
 						break;
 					}
 				}
-				printf("Client %d is disconnected\n", ClientSocket);
+				printf("Client %d is disconnected\n", currentClient.socket);
 				// send message to the gourp that a new client is disconnected
 				char RecvBuf[1024] = "";
 				strcpy_s(RecvBuf, result.c_str());
@@ -97,10 +97,10 @@ void MyThread::run(void) {
 		std::string buf = tempBuf, result;
 		for(auto client = clients->begin(); client != clients->end(); ++client) {
 			std::cout << "Sending a datagram to " << client->socket << std::endl;
-			if(ClientSocket == client->socket) {
+			if(currentClient.socket == client->socket) {
 				result = "Me: " + buf;
 			} else {
-				result = client->nickname + ": " + buf;
+				result = currentClient.nickname + ": " + buf;
 			}
 			strcpy_s(tempBuf, result.c_str());
 			send(client->socket, tempBuf, strlen(tempBuf), 0);
