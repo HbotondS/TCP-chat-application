@@ -2,12 +2,12 @@ package sample.chat;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -27,6 +29,7 @@ public class ChatController {
     public Button sendBtn;
     public Label error;
     public Button refreshBtn;
+    public VBox users;
 
     private Socket socket = null;
     private Timer timer = new Timer();
@@ -34,6 +37,7 @@ public class ChatController {
     private boolean isServerOnline = true;
 
     private String nickname;
+    private List<Button> userList = new ArrayList<>();
 
     public void joinChat(String nickname) {
         this.nickname = nickname;
@@ -113,14 +117,34 @@ public class ChatController {
             case "join": {
                 Text text = new Text(splittedMsg[1] + " joined the chat.\n");
                 text.setStyle("-fx-font-weight: bold");
-                Platform.runLater(() -> textArea.getChildren().add(text));
+                Platform.runLater(() -> {
+                    textArea.getChildren().add(text);
+                    Button button = new Button(splittedMsg[1]);
+                    users.getChildren().add(button);
+                    userList.add(button);
+                });
                 break;
             }
             case "leave": {
                 Text text = new Text(splittedMsg[1] + " left the chat.\n");
                 text.setStyle("-fx-font-weight: bold");
                 text.setFill(Color.RED);
-                Platform.runLater(() -> textArea.getChildren().add(text));
+                Platform.runLater(() -> {
+                    textArea.getChildren().add(text);
+                    for (Button b: userList) {
+                        if (b.getText().equals(splittedMsg[1])) {
+                            userList.remove(b);
+                            break;
+                        }
+                    }
+                    users.getChildren().setAll(userList);
+                    for (Node b: users.getChildren()) {
+                        if (((Button) b).getText().equals(splittedMsg[1])) {
+                            users.getChildren().remove(b);
+                            break;
+                        }
+                    }
+                });
                 break;
             }
             case "public": {
