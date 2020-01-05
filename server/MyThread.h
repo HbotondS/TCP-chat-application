@@ -2,6 +2,7 @@
 #include <Ws2tcpip.h>
 #include <iostream>
 #include <vector>
+#include <string>
 #include "Client.h"
 
 class MyThread {
@@ -28,5 +29,11 @@ private:
 	HANDLE m_thread;
 	Client currentClient;
 	std::vector<Client>* clients;
+
+	std::vector<std::string> splitMsg(std::string);
+
+	void processMsg(std::string);
+	void processPublicMsg(std::string);
+	void processPrivateMsg(std::string, std::string);
 };
 

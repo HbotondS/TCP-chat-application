@@ -2,7 +2,6 @@ package sample.chat;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
@@ -65,7 +64,8 @@ public class ChatController {
                     isServerOnline = true;
                     InputStreamReader inputStreamReader = new InputStreamReader(socket.getInputStream());
                     BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-                    processMsg(bufferedReader.readLine());
+                    String message = bufferedReader.readLine();
+                    processMsg(message);
                 } catch (IOException e) {
                     isServerOnline = false;
                     Platform.runLater(() -> {
@@ -95,8 +95,17 @@ public class ChatController {
             PrintWriter pr = new PrintWriter(socket.getOutputStream());
             String str_in = msg.getText();
             if (!str_in.equals("")) {
-                pr.println(str_in);
-                pr.flush();
+                if (str_in.contains("@")) {
+                    String target = str_in.substring(str_in.indexOf("@"), str_in.indexOf(" "));
+                    str_in = str_in.replace(target, "");
+                    target = target.replace("@", "");
+                    String message = "private|" + str_in + "|" + target;
+                    pr.println(message);
+                    pr.flush();
+                } else {
+                    pr.println("public|" + str_in);
+                    pr.flush();
+                }
 
                 msg.clear();
             }
@@ -120,6 +129,12 @@ public class ChatController {
                 Platform.runLater(() -> {
                     textArea.getChildren().add(text);
                     Button button = new Button(splittedMsg[1]);
+                    button.setOnMouseClicked(event -> {
+                        String tag = "@" + button.getText();
+                        if (!this.msg.getText().contains(tag)) {
+                            this.msg.setText(tag + " " + this.msg.getText());
+                        }
+                    });
                     users.getChildren().add(button);
                     userList.add(button);
                 });
@@ -148,7 +163,13 @@ public class ChatController {
                 break;
             }
             case "public": {
-                Text text = new Text(splittedMsg[1] + ": " + splittedMsg[2] + "\n");
+                Text text = new Text((splittedMsg[1].equals(this.nickname) ? "Me" : splittedMsg[1]) + ": " + splittedMsg[2] + "\n");
+                Platform.runLater(() -> textArea.getChildren().add(text));
+                break;
+            }
+            case "private": {
+                Text text = new Text((splittedMsg[1].equals(this.nickname) ? "Me" : splittedMsg[1]) + ": " + splittedMsg[2] + "\n");
+                text.setStyle("-fx-font-weight: bold");
                 Platform.runLater(() -> textArea.getChildren().add(text));
                 break;
             }

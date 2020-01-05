@@ -1,7 +1,6 @@
 #include "MyThread.h"
 #include <limits.h>
 #include <windows.h>
-#include <string>
 #include <algorithm>
 
 #define INVALID_HANDLE_VALUE 0
@@ -91,19 +90,68 @@ void MyThread::run(void) {
 			return;
 		}
 
-		// the server send the message back to the client
-		char tempBuf[1024];
-		strcpy_s(tempBuf, RecvBuf);
-		std::string buf = tempBuf, result;
-		for(auto client = clients->begin(); client != clients->end(); ++client) {
-			std::cout << "Sending a datagram to " << client->socket << std::endl;
-			if(currentClient.socket == client->socket) {
-				result = "Me: " + buf;
-			} else {
-				result = "public|" + currentClient.nickname + "|" + buf;
-			}
+		std::string buf = RecvBuf;
+		processMsg(buf);
+	}
+}
+
+std::vector<std::string> MyThread::splitMsg(std::string msg) {
+	std::vector<std::string> result;
+	std::string delimiter = "|";
+	size_t pos = 0;
+	std::string token;
+	while((pos = msg.find(delimiter)) != std::string::npos) {
+		token = msg.substr(0, pos);
+		result.push_back(token);
+		msg.erase(0, pos + delimiter.length());
+	}
+	result.push_back(msg.substr(0, msg.length() - 2));
+
+	return result;
+}
+
+void MyThread::processMsg(std::string msg) {
+	std::vector<std::string> result = splitMsg(msg);
+	if(result.at(0) == "public") {
+		processPublicMsg(result.at(1));
+	}
+	if(result.at(0) == "private") {
+		processPrivateMsg(result.at(1), result.at(2));
+	}
+}
+
+void MyThread::processPublicMsg(std::string msg) {
+	char tempBuf[1024];
+	std::string result;
+	// the server send the message back to the client
+	std::cout << "public message" << std::endl;
+	for(auto client = clients->begin(); client != clients->end(); ++client) {
+		std::cout << "Sending a datagram to " << client->nickname << std::endl;
+		result = "public|" + currentClient.nickname + "|" + msg;
+		strcpy_s(tempBuf, result.c_str());
+		send(client->socket, tempBuf, strlen(tempBuf), 0);
+	}
+}
+
+void MyThread::processPrivateMsg(std::string msg, std::string target) {
+	char tempBuf[1024];
+	std::string result;
+	// the server send the message back to the client
+	std::cout << "private message to: " << target << std::endl;
+	for(auto client = clients->begin(); client != clients->end(); ++client) {
+		std::cout << "Sending a datagram to " << client->nickname << std::endl;
+		if(currentClient.socket == client->socket) {
+			result = "private|" + currentClient.nickname + "|" + msg + "\n";
+			std::cout << "message: " << result << std::endl;
 			strcpy_s(tempBuf, result.c_str());
 			send(client->socket, tempBuf, strlen(tempBuf), 0);
+		} else {
+			if(target == client->nickname) {
+				result = "private|" + currentClient.nickname + "|" + msg + "\n";
+				strcpy_s(tempBuf, result.c_str());
+				send(client->socket, tempBuf, strlen(tempBuf), 0);
+				break;
+			}
 		}
 	}
 }
