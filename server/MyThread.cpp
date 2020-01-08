@@ -127,7 +127,7 @@ void MyThread::processPublicMsg(std::string msg) {
 	std::cout << "public message" << std::endl;
 	for(auto client = clients->begin(); client != clients->end(); ++client) {
 		std::cout << "Sending a datagram to " << client->nickname << std::endl;
-		result = "public|" + currentClient.nickname + "|" + msg;
+		result = "public|" + currentClient.nickname + "|" + msg + "\n";
 		strcpy_s(tempBuf, result.c_str());
 		send(client->socket, tempBuf, strlen(tempBuf), 0);
 	}
