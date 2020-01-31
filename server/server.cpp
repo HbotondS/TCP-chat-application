@@ -9,13 +9,14 @@
 
 #pragma comment(lib, "ws2_32.lib")
 
-std::vector<std::string> split(const char* str, char c = ' ') {
+// split a string by the given delimeter
+std::vector<std::string> split(const char* str, char delimeter = ' ') {
 	std::vector<std::string> result;
 
 	do {
 		const char* begin = str;
 
-		while(*str != c && *str)
+		while(*str != delimeter && *str)
 			str++;
 
 		result.push_back(std::string(begin, str));

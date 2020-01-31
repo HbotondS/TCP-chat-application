@@ -23,7 +23,9 @@ MyThread::MyThread(Client currentClient, std::vector<Client>* clients): currentC
 	m_thread = INVALID_HANDLE_VALUE;
 }
 
-MyThread::~MyThread() {}
+MyThread::~MyThread() {
+	delete this->clients;
+}
 
 bool MyThread::start(void) {
 	if(m_bExited) {
@@ -42,8 +44,7 @@ bool MyThread::start(void) {
 bool MyThread::stop(unsigned int timeout) {
 	m_bRunning = false;
 	if(!m_bExited) {
-		for(unsigned int i = 0; (i <= timeout / 100) || (timeout ==
-			INFINIT_WAIT); i++) {
+		for(unsigned int i = 0; (i <= timeout / 100) || (timeout == INFINIT_WAIT); ++i) {
 			m_bRunning = false;
 			if(m_bExited) {
 				break;
@@ -57,6 +58,7 @@ bool MyThread::stop(unsigned int timeout) {
 	}
 	return m_bExited;
 }
+
 void MyThread::run(void) {
 	char SendBuf[1024];
 	char RecvBuf[1024] = "";
